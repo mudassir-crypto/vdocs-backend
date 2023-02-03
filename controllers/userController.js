@@ -63,12 +63,54 @@ export const login = asyncHandler(async (req, res) => {
     const token = user.getJwtToken()
     user.password = undefined
     
-    res.status(200).json(
-      // _id: user._id,
-      token
-    )
+    res.status(200).json(token)
   } else {
+    res.status(401)
     throw new Error("Email or Password is invalid")
   }
+})
+
+export const metamaskValidation = asyncHandler(async(req, res) => {
+
+  const { metamask } = req.body
+
+  if(metamask == "" || !metamask){
+    res.status(401)
+    throw new Error("Metamask does not match with this account")
+  }
+
+  const user = await User.findById(req.user._id).select("-__v -password")
+  if(user.metamask){
+    if(user.metamask !== metamask){
+      res.status(401)
+      throw new Error("Metamask does not match with this account")
+    } else {
+      return res.status(200).json({
+        message: "Account matched",
+        account: user.metamask
+      })
+    }
+  }
+
+  const metaUser = await User.find({ metamask })
+
+  if(metaUser.length > 0){
+    res.status(401)
+    throw new Error("Account already exist with this metamask account")
+  }
+  user['metamask'] = metamask
+  await user.save()
+
+  return res.status(200).json({
+    message: "Account created",
+    account: user.metamask
+  })
+})
+
+export const test = asyncHandler(async(req, res) => {
+
+  res.status(200).json({
+    user: req.user
+  })
 
 })

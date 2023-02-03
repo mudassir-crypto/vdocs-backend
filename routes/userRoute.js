@@ -1,6 +1,7 @@
 import express from 'express'
 import { body } from 'express-validator'
-import { register, login } from '../controllers/userController.js'
+import { register, login, test, metamaskValidation } from '../controllers/userController.js'
+import { isLoggedIn } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -27,5 +28,9 @@ router.route('/login')
     body("password").trim().escape()
   ], login)
 
+router.route("/metamask")
+  .post(isLoggedIn, [
+    body("metamask").trim().escape()
+  ], metamaskValidation)
 
 export default router
