@@ -1,7 +1,9 @@
 import asyncHandler from 'express-async-handler'
-import { body, validationResult } from 'express-validator'
+import { validationResult } from 'express-validator'
 import User from '../models/user.js'
+import mongoose from 'mongoose'
 
+const ObjectId = mongoose.Types.ObjectId
 
 export const register = asyncHandler(async (req, res) => {
   const errors = validationResult(req)
@@ -63,7 +65,9 @@ export const login = asyncHandler(async (req, res) => {
     const token = user.getJwtToken()
     user.password = undefined
     
-    res.status(200).json(token)
+    res.status(200).json({
+      user, token
+    })
   } else {
     res.status(401)
     throw new Error("Email or Password is invalid")
@@ -104,6 +108,52 @@ export const metamaskValidation = asyncHandler(async(req, res) => {
   return res.status(200).json({
     message: "Account created",
     account: user.metamask
+  })
+})
+
+export const getCurrentUser = asyncHandler(async(req, res) => {
+  res.status(200).json({
+    user: req.user
+  })
+})
+
+export const searchUser = asyncHandler(async (req, res) => {
+  const { search } = req.query
+  let searchQuery = search ? {
+    name: {
+      $regex: search,
+      $options: 'i'
+    }
+  } : {}
+
+  const users = await User.find({...searchQuery, role: "user"}).select("-password")
+
+  if(users.length <= 0){
+    return res.status(400).json({
+      message: "No user found"
+    })
+  }
+
+  res.status(200).json({ users })
+})
+
+export const getUserById = asyncHandler(async(req, res) => {
+  const { id } = req.params
+
+  if(!(ObjectId.isValid(id) && (String)(new ObjectId(id)) === id)){
+    res.status(401)
+    throw new Error("Id is invalid")
+  }
+
+  const user = await User.findById(id).select("-password")
+
+  if(!user){
+    res.status(400)
+    throw new Error("User not found")
+  }
+
+  res.status(200).json({
+    user
   })
 })
 

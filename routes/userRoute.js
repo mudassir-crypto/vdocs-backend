@@ -1,7 +1,7 @@
 import express from 'express'
-import { body } from 'express-validator'
-import { register, login, test, metamaskValidation } from '../controllers/userController.js'
-import { isLoggedIn } from '../middleware/authMiddleware.js'
+import { body, param } from 'express-validator'
+import { register, login, test, metamaskValidation, getCurrentUser, searchUser, getUserById } from '../controllers/userController.js'
+import { customRole, isLoggedIn } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -27,6 +27,19 @@ router.route('/login')
     body("email").isEmail().trim().escape(),
     body("password").trim().escape()
   ], login)
+
+router.route("/getCurrentUser")
+  .get(isLoggedIn, getCurrentUser)
+
+router.route("/searchUser")
+  .get(isLoggedIn, customRole("admin"), [
+    body("search").trim().escape()
+  ], searchUser)
+
+router.route("/user/:id")
+  .get(isLoggedIn, customRole("admin"), [
+    param("id").trim().escape()
+  ], getUserById)
 
 router.route("/metamask")
   .post(isLoggedIn, [

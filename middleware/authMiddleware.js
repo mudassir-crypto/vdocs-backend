@@ -13,6 +13,16 @@ export const isLoggedIn = asyncHandler(async (req, res, next) => {
     next()
   } catch (error) {
     res.status(401)
-    throw new Error("You are not authorised")
+    throw new Error("You are not authenticated")
   }
 })
+
+export const customRole = (...roles) => {
+  return (req, res, next) => {
+    if(!roles.includes(req.user.role)){
+      res.status(401)
+      throw new Error("You do not have the permission to access it")
+    }
+    next()
+  }
+}
