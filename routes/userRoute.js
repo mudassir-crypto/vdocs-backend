@@ -1,6 +1,6 @@
 import express from 'express'
 import { body, param } from 'express-validator'
-import { register, login, test, metamaskValidation, getCurrentUser, searchUser, getUserById } from '../controllers/userController.js'
+import { register, login, test, metamaskValidation, getCurrentUser, searchUser, getUserById, sendForVerification, verifyStudent } from '../controllers/userController.js'
 import { customRole, isLoggedIn } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -46,4 +46,10 @@ router.route("/metamask")
     body("metamask").trim().escape()
   ], metamaskValidation)
 
+router.route("/requestVerification")
+  .patch(isLoggedIn, sendForVerification)
+
+router.route("/verifyStudent/:userId")
+  .patch(isLoggedIn, customRole("admin"), verifyStudent)
+  
 export default router

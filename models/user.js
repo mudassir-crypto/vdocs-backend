@@ -65,6 +65,22 @@ const userSchema = new mongoose.Schema({
   },
   metamask: {
     type: String
+  },
+  status: {
+    type: String,
+    required: [true, "Select a status from: pending, verified, rejected"],
+    enum: {
+      values: [
+        "pending",
+        "verified",
+        "rejected",
+      ],
+      message: "Select a status from: pending, verified, rejected"
+    }
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

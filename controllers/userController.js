@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler'
 import { validationResult } from 'express-validator'
 import User from '../models/user.js'
 import mongoose from 'mongoose'
+import mailHelper from '../utils/emailHelper.js'
 
 const ObjectId = mongoose.Types.ObjectId
 
@@ -158,9 +159,75 @@ export const getUserById = asyncHandler(async(req, res) => {
 })
 
 export const test = asyncHandler(async(req, res) => {
-
   res.status(200).json({
     user: req.user
   })
+})
 
+export const sendForVerification = asyncHandler(async (req, res) => {
+
+  const user = await User.findById(req.user._id)
+  const { status } = req.body
+
+  await mailHelper({ 
+    email: "vdocs.vit@gmail.com",
+    subject: "Testing Email", 
+    message: `
+    <div>
+      <p>Hello vdocsAdmin,</p>
+      <p>Student: ${user.name} with email: ${user.email} has uploaded and requested verification of documents</p>
+    </div>
+    `
+  })
+
+  try {
+    user.status = status
+    await user.save()
+
+    res.status(200).json({
+      message: "Email is sent successfully"
+    })
+
+  } catch (error) {
+    res.status(400)
+    throw new Error(error)
+  }
+  
+})
+
+export const verifyStudent = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+  if(!userId){
+    res.status(401)
+    throw new Error("Invalid Id")
+  }
+  const user = await User.findById(userId)
+  const { status } = req.body
+
+  
+
+  try {
+    user.status = status
+    const newUser = await user.save()
+
+    await mailHelper({ 
+      email: user.email,
+      subject: newUser.status === "verified" ? "Documents verified" : "Documents rejected", 
+      message: `
+      <div>
+        <p>Dear ${newUser.name},</p>
+        <p>Your documents have been ${newUser.status}</p>
+      </div>
+      `
+    })
+
+    res.status(200).json({
+      message: "Email is sent successfully"
+    })
+
+  } catch (error) {
+    res.status(400)
+    throw new Error(error)
+  }
+  
 })
