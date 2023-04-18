@@ -171,7 +171,7 @@ export const sendForVerification = asyncHandler(async (req, res) => {
 
   await mailHelper({ 
     email: "vdocs.vit@gmail.com",
-    subject: "Testing Email", 
+    subject: "Requesting Document Verifiction", 
     message: `
     <div>
       <p>Hello vdocsAdmin,</p>
@@ -202,12 +202,13 @@ export const verifyStudent = asyncHandler(async (req, res) => {
     throw new Error("Invalid Id")
   }
   const user = await User.findById(userId)
-  const { status } = req.body
+  const { status, improperDocuments } = req.body
 
   
 
   try {
-    user.status = status
+    user.status = status;
+    user.improperDocuments = improperDocuments;
     const newUser = await user.save()
 
     await mailHelper({ 
@@ -217,6 +218,11 @@ export const verifyStudent = asyncHandler(async (req, res) => {
       <div>
         <p>Dear ${newUser.name},</p>
         <p>Your documents have been ${newUser.status}</p>
+        ${
+          newUser.status === "rejected" && newUser.improperDocuments
+            ? `<p>Reason for rejection: ${newUser.improperDocuments}</p>`
+            : ""
+        }
       </div>
       `
     })

@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    required: [true, "Select a status from: pending, verified, rejected"],
+    // required: [true, "Select a status from: pending, verified, rejected"],
     enum: {
       values: [
         "pending",

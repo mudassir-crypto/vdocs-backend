@@ -28,6 +28,8 @@ router.route('/login')
     body("password").trim().escape()
   ], login)
 
+
+
 router.route("/getCurrentUser")
   .get(isLoggedIn, getCurrentUser)
 
