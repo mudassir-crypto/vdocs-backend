@@ -208,6 +208,9 @@ export const verifyStudent = asyncHandler(async (req, res) => {
 
   try {
     user.status = status;
+    if(status === "verified"){
+      user.isVerified = true
+    }
     user.improperDocuments = improperDocuments;
     const newUser = await user.save()
 
